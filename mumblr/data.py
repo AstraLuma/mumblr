@@ -27,8 +27,20 @@ class WordDB(object):
 		"""
 		return self.rnd.choice(self.words[first])
 	
-	def generate(self, start=True, stop=False):
-		word = self.get_next(start)
-		while word != stop:
+	def generate(self):
+		word = self.get_next(True)
+		while word is not False:
 			yield word
 			word = self.get_next(word)
+	
+	def genline(self):
+		return ' '.join(self.generate())
+	
+	def load_linefile(self, file):
+		for line in file:
+			prev = True # Start 
+			#TODO: parse out puncuation as seperate nodes
+			for w in line.split():
+				self.add_link(prev, w)
+				prev = w
+			self.add_link(prev, False) #Finish

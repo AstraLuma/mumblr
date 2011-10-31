@@ -11,17 +11,10 @@ from mumblr.data import WordDB
 words = WordDB()
 
 # Load data
-for line in open('data.mumble'):
-	#TODO: parse out puncuation as seperate nodes
-	Ws = line.split()
-	prev = True # Start 
-	for w in Ws:
-		words.add_link(prev, w)
-		prev = w
-	words.add_link(prev, False) #Finish
+words.load_linefile(open('data.mumble'))
 
 def mumble():
-	return ' '.join(words.generate(True, False))
+	return words.genline()
 
 class CommandBot(irc.IRCClient):
 	"""
