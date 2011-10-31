@@ -1,0 +1,25 @@
+#!/usr/bin/python
+# -*- tab-width: 4; use-tabs: 1; coding: utf-8 -*-
+# vim:tabstop=4:noexpandtab:
+"""
+Generates a mumble file from logs.
+"""
+import re, os
+
+out = open('data.mumble', 'w')
+LOGLINES = map(re.compile, [
+	r'^\[\d{2}:\d{2}:\d{2}\] [^* ]*?: (.*)$',
+	r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}  <.+?> (.*)$'
+	])
+for fn in os.listdir('rawdata'):
+	for line in open('rawdata/'+fn, 'rU'):
+		line = line.strip()
+		if len(line.split()) < 5: continue
+		for LL in LOGLINES:
+			m = LL.match(line)
+			if m: 
+				break
+		else:
+			continue
+		print >> out, m.group(1)
+
