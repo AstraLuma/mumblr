@@ -1,0 +1,5 @@
+This is just a silly IRC bot, based on twisted, that fills in IRC deadspots 
+with randomness.
+
+It uses markov chains leanred from the history (or any other sources) to 
+generate this mumbling.
