@@ -27,14 +27,14 @@ class WordDB(object):
 		"""
 		return self.rnd.choice(self.words[first])
 	
-	def generate(self):
-		word = self.get_next(True)
-		while word is not False:
+	def generate(self, start=True, stop=False):
+		word = self.get_next(start)
+		while word != stop:
 			yield word
 			word = self.get_next(word)
 	
-	def genline(self):
-		return ' '.join(self.generate())
+	def genline(self, *p, **kw):
+		return ' '.join(self.generate(*p, **kw))
 	
 	def load_linefile(self, file):
 		for line in file:

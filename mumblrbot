@@ -9,6 +9,7 @@ from twisted.internet import reactor, protocol, task
 from mumblr.data import WordDB
 from time import time
 from random import SystemRandom
+import re
 
 words = WordDB()
 rnd = SystemRandom()
@@ -16,8 +17,8 @@ rnd = SystemRandom()
 # Load data
 words.load_linefile(open('data.mumble'))
 
-def mumble():
-	return words.genline()
+def mumble(start=True):
+	return words.genline(start=start)
 
 def waittime():
 #	m = rnd.gauss(60, 10)
@@ -39,6 +40,9 @@ class MumblrBot(irc.IRCClient):
 		self.msg('nickserv', 'IDENTIFY %s %s' % (self.factory.config.nick, self.factory.config.nickpass))
 		for c in self.factory.config.channels:
 			self.join(c)
+		en = re.escape(self.nickname)
+		self.WHOAMI = re.compile(en+r'[:,]? who are you\??|who is '+en+r'\??', re.I)
+		print self.WHOAMI.pattern
 	
 	def mumbleLater(self, channel, time=None):
 		if time is None:
@@ -56,9 +60,14 @@ class MumblrBot(irc.IRCClient):
 		user = user.split('!', 1)[0]
 	
 		# Check to see if they're sending me a private message
-		if channel == self.nickname:
+		print repr(msg)
+		if self.WHOAMI.search(msg):
+			print "WHOAMI in", channel
+			rply = 'I am '+mumble('am')
+			self.msg(channel, rply)
+		elif channel == self.nickname:
 			self.msg(user, mumble())
-		elif channel in self.channelact:
+		if channel in self.channelact:
 			self.channelact[channel] = time()
 			self.channelclocks[channel].reset(waittime())
 	
