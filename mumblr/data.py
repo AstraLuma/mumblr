@@ -11,6 +11,9 @@ class WordDB(object):
 	"""
 	Stores statistical markov chain patterns.
 	"""
+	
+	learnfile = None
+	
 	def __init__(self):
 		self.words = {}
 		self.rnd = SystemRandom()
@@ -36,11 +39,19 @@ class WordDB(object):
 	def genline(self, *p, **kw):
 		return ' '.join(self.generate(*p, **kw))
 	
+	def add_line(self, line):
+		prev = True # Start 
+		#TODO: parse out puncuation as seperate nodes
+		for w in line.split():
+			self.add_link(prev, w)
+			prev = w
+		self.add_link(prev, False) #Finish
+		
+		if self.learnfile is not None:
+			if line[-1] != '\n':
+				line += '\n'
+			self.learnfile.write(line)
+	
 	def load_linefile(self, file):
 		for line in file:
-			prev = True # Start 
-			#TODO: parse out puncuation as seperate nodes
-			for w in line.split():
-				self.add_link(prev, w)
-				prev = w
-			self.add_link(prev, False) #Finish
+			self.add_line(line)

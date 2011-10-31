@@ -16,6 +16,7 @@ rnd = SystemRandom()
 
 # Load data
 words.load_linefile(open('data.mumble'))
+words.learnfile = open('data.mumble', 'a')
 
 def mumble(start=True):
 	return words.genline(start=start)
@@ -67,6 +68,8 @@ class MumblrBot(irc.IRCClient):
 			self.msg(channel, rply)
 		elif channel == self.nickname:
 			self.msg(user, mumble())
+		elif msg[0] not in '.|@!': #Not a bot command
+			words.add_line(msg)
 		if channel in self.channelact:
 			self.channelact[channel] = time()
 			self.channelclocks[channel].reset(waittime())
