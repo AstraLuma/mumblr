@@ -48,6 +48,7 @@ class WordDB(object):
 		self.add_link(prev, False) #Finish
 		
 		if self.learnfile is not None:
+			print repr(line)
 			if line[-1] != '\n':
 				line += '\n'
 			self.learnfile.write(line)

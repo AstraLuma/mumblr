@@ -21,17 +21,22 @@ words.learnfile = open('data.mumble', 'a')
 def mumble(start=True):
 	return words.genline(start=start)
 
-def waittime():
-#	m = rnd.gauss(60, 10)
-	m = rnd.betavariate(2,2)*2*30
-#	m = rnd.triangle(50,70)
-	print "Wait %s minutes" % m
-	return m * 60
 
 class MumblrBot(irc.IRCClient):
 	"""
 	A bot the mumbles on command.
 	"""
+	
+	def waittime(self):
+		try:
+			t = self.factory.config.waittime
+		except AttributeError:
+			t= 60
+	#	m = rnd.gauss(t, 10)
+		m = rnd.betavariate(2,2)*2*t
+	#	m = rnd.triangle(t-10,t+10)
+		print "Wait %s minutes" % m
+		return m * 60
 	
 	def signedOn(self):
 		"""Called when bot has succesfully signed on to server."""
@@ -45,40 +50,41 @@ class MumblrBot(irc.IRCClient):
 		self.WHOAMI = re.compile(en+r'[:,]? who are you\??|who is '+en+r'\??', re.I)
 		print self.WHOAMI.pattern
 	
-	def mumbleLater(self, channel, time=None):
-		if time is None:
-			time = waittime()
-		return reactor.callLater(waittime(), self.mumbleabit, channel)
-	
 	def joined(self, channel):
 		"""This will get called when the bot joins the channel."""
 		print "Joined", channel
 		self.channelact[channel] = time()
 		self.channelclocks[channel] = self.mumbleLater(channel)
-
+	
+	def mumbleLater(self, channel):
+		return reactor.callLater(self.waittime(), self.mumbleabit, channel)
+	
+	def cleartime(self, channel):
+		self.channelclocks[channel].reset(self.waittime())
+	
 	def privmsg(self, user, channel, msg):
 		"""This will get called when the bot receives a message."""
 		user = user.split('!', 1)[0]
 	
 		# Check to see if they're sending me a private message
-		print repr(msg)
+		
 		if self.WHOAMI.search(msg):
 			print "WHOAMI in", channel
 			rply = 'I am '+mumble('am')
 			self.msg(channel, rply)
 		elif channel == self.nickname:
 			self.msg(user, mumble())
-		elif msg[0] not in '.|@!': #Not a bot command
+		elif msg[0] not in '.|@!' and channel.startswith('#'): #Not a bot command
 			words.add_line(msg)
 		if channel in self.channelact:
 			self.channelact[channel] = time()
-			self.channelclocks[channel].reset(waittime())
+			self.cleartime()
 	
 	def action(self, user, channel, msg):
 		"""This will get called when the bot sees someone do an action."""
 		if channel in self.channelact:
 			self.channelact[channel] = time()
-			self.channelclocks[channel].reset(waittime())
+			self.cleartime()
 	
 	def mumbleabit(self, channel):
 		print "Mumbling in %s" % channel
