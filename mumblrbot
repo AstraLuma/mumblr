@@ -78,13 +78,13 @@ class MumblrBot(irc.IRCClient):
 			words.add_line(msg)
 		if channel in self.channelact:
 			self.channelact[channel] = time()
-			self.cleartime()
+			self.cleartime(channel)
 	
 	def action(self, user, channel, msg):
 		"""This will get called when the bot sees someone do an action."""
 		if channel in self.channelact:
 			self.channelact[channel] = time()
-			self.cleartime()
+			self.cleartime(channel)
 	
 	def mumbleabit(self, channel):
 		print "Mumbling in %s" % channel
